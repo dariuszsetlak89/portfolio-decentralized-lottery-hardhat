@@ -1,2 +1,1 @@
-# portfolio-decentralized-lottery-hardhat
-My portfolio project: Decentralized Lottery Dapp - Hardhat backend
+# My portfolio project: Decentralized Lottery Dapp - Hardhat backend

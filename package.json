@@ -1,0 +1,40 @@
+{
+  "name": "portfolio-decentralized-lottery-hardhat",
+  "version": "0.1.0",
+  "description": "My portfolio project: Decentralized Lottery Dapp - Hardhat backend",
+  "repository": "git@github.com:dariuszsetlak89/portfolio-decentralized-lottery-hardhat.git",
+  "author": "Dariusz Setlak <kryptoprogramista89@gmail.com>",
+  "license": "MIT",
+  "private": true,
+  "devDependencies": {
+    "@chainlink/contracts": "^0.5.1",
+    "@nomiclabs/hardhat-ethers": "npm:hardhat-deploy-ethers",
+    "@nomiclabs/hardhat-etherscan": "^3.1.2",
+    "@nomiclabs/hardhat-waffle": "^2.0.3",
+    "chai": "^4.3.6",
+    "dotenv": "^16.0.3",
+    "ethereum-waffle": "^3.4.4",
+    "ethers": "^5.7.2",
+    "hardhat": "^2.12.1",
+    "hardhat-contract-sizer": "^2.6.1",
+    "hardhat-deploy": "^0.11.19",
+    "hardhat-gas-reporter": "^1.0.9",
+    "prettier": "^2.7.1",
+    "prettier-plugin-solidity": "^1.0.0-beta.24",
+    "solhint": "^3.3.7",
+    "solidity-coverage": "^0.8.2",
+    "yarn-upgrade-all": "^0.7.1"
+  },
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test test/unit/*_test.js --network hardhat",
+    "test-staging": "hardhat test test/staging/*_test.js --network goerli",
+    "lint": "solhint 'contracts/*.sol'",
+    "lint:fix": "solhint 'contracts/**/*.sol' --fix",
+    "format": "prettier --write .",
+    "coverage": "hardhat coverage --solcoverjs ./.solcover.js"
+  },
+  "mocha": {
+    "timeout": 10000000
+  }
+}
