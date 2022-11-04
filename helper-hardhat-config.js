@@ -24,8 +24,8 @@ const networkConfig = {
 const developmentChains = ["hardhat", "localhost"];
 
 // Next.js front-end communication
-const frontEndContractsFile = "../portfolio-snake-game-nextjs/constants/contractAddresses.json";
-const frontEndAbiLocation = "../portfolio-snake-game-nextjs/constants/";
+const frontEndContractsFile = "../portfolio-decentralized-lottery-nextjs/constants/contractAddresses.json";
+const frontEndAbiLocation = "../portfolio-decentralized-lottery-nextjs/constants/";
 
 module.exports = {
     networkConfig,
