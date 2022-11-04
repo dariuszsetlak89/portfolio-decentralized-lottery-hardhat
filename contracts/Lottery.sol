@@ -7,6 +7,7 @@ pragma solidity ^0.8.17;
 import "@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/AutomationCompatibleInterface.sol";
+import "hardhat/console.sol";
 
 //////////////
 //  Errors  //
@@ -170,7 +171,7 @@ contract Lottery is VRFConsumerBaseV2, AutomationCompatibleInterface {
     uint16 private constant REQUEST_CONFIRMATIONS = 3;
 
     /// @dev The number of random values requested to VRFCoordinatorV2 contract.
-    uint32 private constant RANDOM_NUMBERS = 1;
+    uint32 private constant NUM_WORDS = 1;
 
     ///////////////////
     //  Constructor  //
@@ -190,8 +191,6 @@ contract Lottery is VRFConsumerBaseV2, AutomationCompatibleInterface {
         uint32 subscriptionId,
         uint32 callbackGasLimit
     ) VRFConsumerBaseV2(vrfCoordinatorV2) {
-        s_lotteryData.lotteryState = LotteryState.CLOSE;
-        s_lotteryData.lotteryState = LotteryState.CLOSE;
         s_lotteryData.lotteryState = LotteryState.CLOSE;
 
         s_lotteryFees[LotteryFee.LOW] = FEE_LOW;
@@ -312,11 +311,16 @@ contract Lottery is VRFConsumerBaseV2, AutomationCompatibleInterface {
         )
     {
         bool isLotteryOpen = s_lotteryData.lotteryState == LotteryState.OPEN;
-        bool lotteryTimePassed = (block.timestamp - s_lotteryData.startTimeStamp) > s_lotteryData.duration;
+        // bool lotteryTimePassed = (block.timestamp - s_lotteryData.startTimeStamp) > s_lotteryData.duration;
         bool lotteryHasPlayers = s_lotteryData.players.length > 0;
         bool lotteryHasBalance = address(this).balance > 0;
 
-        if (isLotteryOpen && lotteryTimePassed && lotteryHasPlayers && lotteryHasBalance) return (upkeepNeeded = true, "");
+        if (
+            isLotteryOpen &&
+            /*lotteryTimePassed &&*/
+            lotteryHasPlayers &&
+            lotteryHasBalance
+        ) return (upkeepNeeded = true, "");
         else return (upkeepNeeded = false, "");
     }
 
@@ -345,7 +349,7 @@ contract Lottery is VRFConsumerBaseV2, AutomationCompatibleInterface {
             i_subscriptionId,
             REQUEST_CONFIRMATIONS,
             i_callbackGasLimit,
-            RANDOM_NUMBERS
+            NUM_WORDS
         );
 
         // Emit an event LotteryWinnerRequested
@@ -467,7 +471,7 @@ contract Lottery is VRFConsumerBaseV2, AutomationCompatibleInterface {
      * @return The end time stamp of the latest finished lottery.
      */
     function geLatestLotteryEndTimeStamp() public view returns (uint256) {
-        return s_lotteryData.latestLotteryData.numberOfPlayers;
+        return s_lotteryData.latestLotteryData.endTimeStamp;
     }
 
     /**

@@ -9,7 +9,7 @@ const networkConfig = {
     31337: {
         name: "localhost",
         gasLane: "0x79d3d8832d904592c0bf9818b621522c988bb8b0c05cdc3b15aea1b6e8db0c15", // it doesn't matter for mocks
-        subscriptionId: "999",
+        subscriptionId: "588",
         callbackGasLimit: "500000", // 500,000 gas
     },
     5: {
