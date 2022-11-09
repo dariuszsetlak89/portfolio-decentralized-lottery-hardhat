@@ -21,17 +21,15 @@ async function updateContractAddresses() {
     const chainId = network.config.chainId.toString();
     if (chainId in contractAddresses) {
         // `Lottery` contract address update
-        const lotteryChainAddress = contractAddresses[chainId]["Lottery"];
-        console.log(lotteryChainAddress);
+        const lotteryChainAddress = contractAddresses[chainId];
+        // console.log("lotteryChainAddress:", lotteryChainAddress);
         if (!lotteryChainAddress.includes(lottery.address)) {
             lotteryChainAddress.pop();
             lotteryChainAddress.push(lottery.address);
         }
     } else {
         // Save new `Lottery` contract address
-        contractAddresses[chainId] = {
-            Lottery: [lottery.address],
-        };
+        contractAddresses[chainId] = [lottery.address];
     }
     fs.writeFileSync(frontEndContractsFile, JSON.stringify(contractAddresses));
 }

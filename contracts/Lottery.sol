@@ -27,7 +27,7 @@ error Lottery__UpkeepNotNeeded();
  * @author Dariusz Setlak
  * @notice The Decentralized Lottery smart contract.
  * @dev The Decentralized Lottery smart contract containing the following functions:
- * External functions:
+ * Main functions:
  * Getter functions:
  * Other functions: receive, fallback
  */
@@ -100,19 +100,7 @@ contract Lottery is VRFConsumerBaseV2, AutomationCompatibleInterface {
         uint256 startTimeStamp;
         uint256 duration;
         address payable[] players;
-        LatestLotteryData latestLotteryData;
-    }
-
-    /**
-     * @dev Struct of latest lottery data parameters.
-     * address lotteryWinner - the latest lottery winner
-     * uint32 numberOfPlayers - the latest lottery players number
-     * uint256 endTimeStamp - the latest lottery end time stamp
-     */
-    struct LatestLotteryData {
-        address lotteryWinner;
-        uint256 numberOfPlayers;
-        uint256 endTimeStamp;
+        address latestLotteryWinner;
     }
 
     ////////////////
@@ -207,9 +195,9 @@ contract Lottery is VRFConsumerBaseV2, AutomationCompatibleInterface {
         i_callbackGasLimit = callbackGasLimit;
     }
 
-    //////////////////////
-    // Public Functions //
-    //////////////////////
+    ////////////////////
+    // Main Functions //
+    ////////////////////
 
     /**
      * @notice Function for start new decentralized lottery.
@@ -373,13 +361,7 @@ contract Lottery is VRFConsumerBaseV2, AutomationCompatibleInterface {
         address payable currentWinner = s_lotteryData.players[indexOfWinner];
 
         // Set current winner address as latest lottery winner
-        s_lotteryData.latestLotteryData.lotteryWinner = currentWinner;
-
-        // Set number of latest lottery players
-        s_lotteryData.latestLotteryData.numberOfPlayers = s_lotteryData.players.length;
-
-        // Set the latest lottery end time
-        s_lotteryData.latestLotteryData.endTimeStamp = block.timestamp;
+        s_lotteryData.latestLotteryWinner = currentWinner;
 
         // Set the lottery state to CLOSE
         s_lotteryData.lotteryState = LotteryState.CLOSE;
@@ -455,23 +437,7 @@ contract Lottery is VRFConsumerBaseV2, AutomationCompatibleInterface {
      * @return The latest lottery winner address.
      */
     function getLatestLotteryWinner() public view returns (address) {
-        return s_lotteryData.latestLotteryData.lotteryWinner;
-    }
-
-    /**
-     * @notice Getter function to get the number of participants of the latest lottery.
-     * @return The number of participants of the latest lottery.
-     */
-    function getLatestLotteryPlayersNumber() public view returns (uint256) {
-        return s_lotteryData.latestLotteryData.numberOfPlayers;
-    }
-
-    /**
-     * @notice Getter function to get the end timestamp of the latest finished lottery.
-     * @return The end time stamp of the latest finished lottery.
-     */
-    function geLatestLotteryEndTimeStamp() public view returns (uint256) {
-        return s_lotteryData.latestLotteryData.endTimeStamp;
+        return s_lotteryData.latestLotteryWinner;
     }
 
     /**

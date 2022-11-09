@@ -4,7 +4,7 @@
   "description": "My portfolio project: Decentralized Lottery Dapp - Hardhat backend",
   "repository": "git@github.com:dariuszsetlak89/portfolio-decentralized-lottery-hardhat.git",
   "author": "Dariusz Setlak <kryptoprogramista89@gmail.com>",
-  "license": "MIT",
+  "license": "GNU General Public License v3.0",
   "private": true,
   "devDependencies": {
     "@chainlink/contracts": "^0.5.1",
