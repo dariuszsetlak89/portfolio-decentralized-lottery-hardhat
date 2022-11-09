@@ -1,19 +1,11 @@
 const { ethers } = require("hardhat");
 
 //////////////////////////////
-// Lottery duration:
-//  0 - FAST (5 minutes)
-//  1 - MEDIUM (1 hour)
-//  2 - LONG (12 hours)
-const LOTTERY_DURATION = 1;
-//////////////////////////////
-
-//////////////////////////////
 // Lottery entrance fee:
 //  0 - LOW (0.1 ETH)
-//  1 - MEDIUM (1 ETH)
-//  2 - HIGH (10 ETH)
-const ENTRANCE_FEE = 1;
+//  1 - MEDIUM (0.5 ETH)
+//  2 - HIGH (1 ETH)
+const ENTRANCE_FEE = 2;
 //////////////////////////////
 
 async function getLotteryData() {
@@ -24,23 +16,32 @@ async function getLotteryData() {
 
     // Get contract and connect deployer account
     lotteryContract = await ethers.getContract("Lottery");
-    lottery = await lotteryContract.connect(deployer);
+    lottery = lotteryContract.connect(deployer);
 
     console.log("-------------------------------------------------------");
 
-    // Lottery data parameters
+    //// Lottery data parameters
+    // Lottery state
     const lotteryState = await lottery.getLotteryState();
+    console.log(`Lottery state (0 - CLOSE, 1 - OPEN, 2 - CALCULATING): ${lotteryState}`);
+    // Lottery entrance fee
     const lotteryEntranceFee = await lottery.getLotteryEntranceFee();
-    const lotteryStartTimeStamp = await lottery.getLotteryStartTimeStamp();
-    const lotteryDuration = await lottery.getLotteryDurationTime();
-    const lotteryPlayersNumber = await lottery.getLotteryPlayersNumber();
-    const lotteryContractBalance = await lottery.getLotteryBalance();
-    console.log(`Lottery state (0 - NOT_STARTED, 1 - OPEN, 2 - CALCULATING): ${lotteryState}`);
     console.log(`Entrance fee: ${ethers.utils.formatEther(lotteryEntranceFee)} ETH`);
+    // Lottery start time stamp
+    const lotteryStartTimeStamp = await lottery.getLotteryStartTimeStamp();
     console.log(`Lottery start time stamp: ${lotteryStartTimeStamp}`);
-    console.log(`Lottery duration: ${lotteryDuration} seconds / ${lotteryDuration / 60} minutes / ${lotteryDuration / 3600} hours`);
-    console.log(`Lottery contract balance: ${ethers.utils.formatEther(lotteryContractBalance)} ETH`);
+    // Lottery duration time in seconds
+    const lotteryDuration = await lottery.getLotteryDurationTime();
+    console.log(`Lottery duration: ${lotteryDuration} seconds / ${lotteryDuration / 60} minutes`);
+    // Lottery players number
+    const lotteryPlayersNumber = await lottery.getLotteryPlayersNumber();
     console.log(`Number of players: ${lotteryPlayersNumber}`);
+    // Lottery contract balance
+    const lotteryContractBalance = await lottery.getLotteryBalance();
+    console.log(`Lottery contract balance: ${ethers.utils.formatEther(lotteryContractBalance)} ETH`);
+    // Latest lottery winner
+    const getLatestLotteryWinner = await lottery.getLatestLotteryWinner();
+    console.log(`Latest lottery winner: ${getLatestLotteryWinner}`);
 
     console.log("-------------------------------------------------------");
 }

@@ -11,7 +11,12 @@ module.exports = async function ({ getNamedAccounts, deployments }) {
     const chainId = network.config.chainId;
     let vrfCoordinatorV2Address, subscriptionId;
 
-    // Set constructor parameters
+    ////////////////////////////////////////////////////////
+    // Set lottery duration time
+    const durationTime = 300; // 300 seconds = 5 minutes
+    ////////////////////////////////////////////////////////
+
+    // Set other constructor parameters
     if (developmentChains.includes(network.name)) {
         // Develpmnent chains
         const vrfCoordinatorV2Mock = await ethers.getContract("VRFCoordinatorV2Mock");
@@ -29,7 +34,7 @@ module.exports = async function ({ getNamedAccounts, deployments }) {
     const callbackGasLimit = networkConfig[chainId]["callbackGasLimit"];
 
     // Constructor parameters
-    const args = [vrfCoordinatorV2Address, gasLane, subscriptionId, callbackGasLimit];
+    const args = [durationTime, vrfCoordinatorV2Address, gasLane, subscriptionId, callbackGasLimit];
 
     // Deploy `Lottery` contract
     const lottery = await deploy("Lottery", {

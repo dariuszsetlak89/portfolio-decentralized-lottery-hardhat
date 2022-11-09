@@ -7,7 +7,6 @@ pragma solidity ^0.8.17;
 import "@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/AutomationCompatibleInterface.sol";
-import "hardhat/console.sol";
 
 //////////////
 //  Errors  //
@@ -27,15 +26,16 @@ error Lottery__UpkeepNotNeeded();
  * @author Dariusz Setlak
  * @notice The Decentralized Lottery smart contract.
  * @dev The Decentralized Lottery smart contract containing the following functions:
- * Main functions:
- * Getter functions:
+ * Main functions: startLottery, joinLottery, checkUpkeep, performUpkeep, fulfillRandomWords
+ * Getter functions: getLotteryState, getLotteryEntranceFee, getLotteryStartTimeStamp, getLotteryPlayersNumber,
+ * getLatestLotteryWinner, getLotteyDurationTime, getLotteryBalance, getLotteryFeesValues
  * Other functions: receive, fallback
  */
 contract Lottery is VRFConsumerBaseV2, AutomationCompatibleInterface {
     //////////////
     //  Events  //
     //////////////
-    event LotteryStarted(LotteryDuration indexed duration, LotteryFee indexed entranceFee, address indexed firstPlayer);
+    event LotteryStarted(LotteryFee indexed entranceFee, address indexed firstPlayer);
     event LotteryJoined(address indexed newPlayer);
     event LotteryWinnerRequested(uint256 indexed requestId);
     event WinnerPicked(address indexed winner, uint256 indexed winnerPrize);
@@ -52,33 +52,21 @@ contract Lottery is VRFConsumerBaseV2, AutomationCompatibleInterface {
      * CALCULATING - lottery is choosing the winner, not possible to join lottery
      */
     enum LotteryState {
-        CLOSE, // 0
-        OPEN, // 1
-        CALCULATING // 2
-    }
-
-    /**
-     * @dev Enum variable storing 3 possible lottery duration times:
-     * FAST - 5 minutes
-     * MEDIUM - 1 hour
-     * LONG - 12 hours
-     */
-    enum LotteryDuration {
-        FAST, // 0
-        MEDIUM, // 1
-        LONG // 2
+        CLOSE, // uint8 = 0
+        OPEN, // uint8 = 1
+        CALCULATING // uint8 = 2
     }
 
     /**
      * @dev Enum variable storing 3 possible lottery entrance fee values:
      * LOW - 0.1
-     * MEDIUM - 1
-     * HIGH - 10
+     * MEDIUM - 0.5
+     * HIGH - 1
      */
     enum LotteryFee {
-        LOW, // 0
-        MEDIUM, // 1
-        HIGH // 2
+        LOW, // uint8 = 0
+        MEDIUM, // uint8 = 1
+        HIGH // uint8 = 2
     }
 
     ///////////////
@@ -90,15 +78,13 @@ contract Lottery is VRFConsumerBaseV2, AutomationCompatibleInterface {
      * LotteryState lotteryState - lottery state ENUM parameter
      * uint256 lotteryFee - lottery fee parameter
      * uint256 startTimeStamp - lottery start time stamp parameter
-     * uint256 duration - lottery duration time in seconds
      * LotteryPlayers[] players - array of lottery players addresses
-     * LatestLotteryData latestLotteryData - latest lottery data parameters
+     * address latestLotteryWinner - latest lottery winner parameter
      */
     struct LotteryData {
         LotteryState lotteryState;
         uint256 lotteryFee;
         uint256 startTimeStamp;
-        uint256 duration;
         address payable[] players;
         address latestLotteryWinner;
     }
@@ -106,9 +92,6 @@ contract Lottery is VRFConsumerBaseV2, AutomationCompatibleInterface {
     ////////////////
     //  Mappings  //
     ////////////////
-
-    /// @dev Mapping LotteryDuration to lottery duration constant values.
-    mapping(LotteryDuration => uint256) private s_lotteryDurations;
 
     /// @dev Mapping LotteryFee to lottery entrance fee constant values.
     mapping(LotteryFee => uint256) private s_lotteryFees;
@@ -120,23 +103,17 @@ contract Lottery is VRFConsumerBaseV2, AutomationCompatibleInterface {
     /// @dev Lottery data parameters struct variable
     LotteryData private s_lotteryData;
 
-    /// @dev Lottery duration FAST value
-    uint256 public constant DURATION_5MINUTES = 300; // 300 seconds = 5 minutes
-
-    /// @dev Lottery duration MEDIUM value
-    uint256 public constant DURATION_1HOUR = 3600; // 3600 seconds = 60 minutes = 1 hour
-
-    /// @dev Lottery duration LONG value
-    uint256 public constant DURATION_1DAY = 86400; // 86400 seconds = 1440 minutes = 24 hours
+    /// @dev Lottery duration time 5 minutes value
+    uint256 private immutable i_durationTime; // seconds
 
     /// @dev Lottery entrance fee LOW value
-    uint256 public constant FEE_LOW = 100000000000000000; // 0.1 ETH
+    uint256 private constant FEE_LOW = 100000000000000000; // 0.1 ETH
 
     /// @dev Lottery entrance fee MEDIUM value
-    uint256 public constant FEE_MEDIUM = 1000000000000000000; // 1 ETH
+    uint256 private constant FEE_MEDIUM = 500000000000000000; // 0.5 ETH
 
     /// @dev Lottery entrance fee HIGH value
-    uint256 public constant FEE_HIGH = 10000000000000000000; // 10 ETH
+    uint256 private constant FEE_HIGH = 1000000000000000000; // 1 ETH
 
     ///////////////////
     // VRF variables //
@@ -168,31 +145,33 @@ contract Lottery is VRFConsumerBaseV2, AutomationCompatibleInterface {
     /**
      * @dev Lottery contract constructor.
      * Set given parameters to appropriate variables, when contract deploys.
+     * @param durationTime given lottery duration time parameter in seconds
      * @param vrfCoordinatorV2 given vrfCoordinatorV2 contract
      * @param gasLane given gas lane key hash value
      * @param subscriptionId given Chainlink VRF subscriptionId number
      * @param callbackGasLimit given limit of gas for a single Chainlink VRF request
      */
     constructor(
+        uint256 durationTime,
         address vrfCoordinatorV2,
         bytes32 gasLane,
         uint32 subscriptionId,
         uint32 callbackGasLimit
     ) VRFConsumerBaseV2(vrfCoordinatorV2) {
-        s_lotteryData.lotteryState = LotteryState.CLOSE;
-
-        s_lotteryFees[LotteryFee.LOW] = FEE_LOW;
-        s_lotteryFees[LotteryFee.MEDIUM] = FEE_MEDIUM;
-        s_lotteryFees[LotteryFee.HIGH] = FEE_HIGH;
-
-        s_lotteryDurations[LotteryDuration.FAST] = DURATION_5MINUTES;
-        s_lotteryDurations[LotteryDuration.MEDIUM] = DURATION_1HOUR;
-        s_lotteryDurations[LotteryDuration.LONG] = DURATION_1DAY;
-
+        // Set given parameters to immutable contract variables
+        i_durationTime = durationTime;
         i_vrfCoordinator = VRFCoordinatorV2Interface(vrfCoordinatorV2);
         i_gasLane = gasLane;
         i_subscriptionId = subscriptionId;
         i_callbackGasLimit = callbackGasLimit;
+
+        // Set lottery initial state to CLOSE
+        s_lotteryData.lotteryState = LotteryState.CLOSE;
+
+        // Assign mapping of lottery fees ENUM option variables to appropriate constant values
+        s_lotteryFees[LotteryFee.LOW] = FEE_LOW;
+        s_lotteryFees[LotteryFee.MEDIUM] = FEE_MEDIUM;
+        s_lotteryFees[LotteryFee.HIGH] = FEE_HIGH;
     }
 
     ////////////////////
@@ -201,17 +180,16 @@ contract Lottery is VRFConsumerBaseV2, AutomationCompatibleInterface {
 
     /**
      * @notice Function for start new decentralized lottery.
-     * @dev Function allows player to start new decentralized lottery.
-     * First player, who starts new lottery set the lottery parameters:
-     * -> lottery duration time: FAST - 5 minutes, MEDIUM - 1 hour and LONG - 1 day
-     * -> lottery entrance fee: LOW - 0.1, MEDIUM - 1 and HIGH - 10.
-     * 
-     * This is a public function, invoked by the user, using front-end application.
-
-     * @param _duration lottery duration time of first player choice (ENUM)
+     * @dev Function allows any user to start new decentralized lottery with entrance fee of his choice.
+     * When the first player starts new lottery, he set lottery entrance fee for himself and all new players,
+     * who join the lottery, until fixed lottery time passes. The first player can choose entrance fee amount
+     * from 3 awaliable ENUM variables opctions: LOW - 0.1, MEDIUM - 0.5 and HIGH - 1.
+     *
+     * This is an external function, invoked by the user, using front-end application.
+     *
      * @param _entranceFee lottery entrance fee of choice (ENUM)
      */
-    function startLottery(LotteryDuration _duration, LotteryFee _entranceFee) public payable {
+    function startLottery(LotteryFee _entranceFee) external payable {
         // Check if lottery is in CLOSE state
         if (s_lotteryData.lotteryState != LotteryState.CLOSE) {
             revert Lottery__AlreadyStarted();
@@ -227,35 +205,30 @@ contract Lottery is VRFConsumerBaseV2, AutomationCompatibleInterface {
             revert Lottery__NotEnoughFeeSent();
         }
 
-        // Set lottery duration time
-        if (_duration == LotteryDuration.FAST) s_lotteryData.duration = s_lotteryDurations[LotteryDuration.FAST];
-        else if (_duration == LotteryDuration.MEDIUM) s_lotteryData.duration = s_lotteryDurations[LotteryDuration.MEDIUM];
-        else if (_duration == LotteryDuration.LONG) s_lotteryData.duration = s_lotteryDurations[LotteryDuration.LONG];
         // Change lottery state to OPEN
         s_lotteryData.lotteryState = LotteryState.OPEN;
 
-        // Push first lottery player's address to array
+        // Push first player's address to lottery player's array
         s_lotteryData.players.push(payable(msg.sender));
 
         // Set lottery starting time stamp
         s_lotteryData.startTimeStamp = block.timestamp;
 
         // Emit an event LotteryStarted
-        emit LotteryStarted(_duration, _entranceFee, msg.sender);
+        emit LotteryStarted(_entranceFee, msg.sender);
     }
 
     /**
      * @notice Function for joining new players to already started lottery.
-     * @dev Function allows new players to join already started lottery.
+     * @dev Function allows new players to join already started lottery, until lottery time is up.
      * To join already started lottery, new player has to send entrance fee with transaction.
-     * The entrance fee amount is fixed and set by the player, who has started this specific lottery.
      * The lottery entrance fee can not be changed until lottery duration time expires and the winner
-     * is picked. If that happens, the lottery can be started again by first player with new duration
-     * time and entrance fee using `startLottery` function.
+     * is picked. If that happens, the lottery can be started again by first player with new entrance
+     * fee using `startLottery` function.
      *
-     * This is a public function, invoked by the user, using front-end application.
+     * This is an external function, invoked by the user, using front-end application.
      */
-    function joinLottery() public payable {
+    function joinLottery() external payable {
         // Check if lottery is in OPEN state
         if (s_lotteryData.lotteryState != LotteryState.OPEN) {
             revert Lottery__NotOpen();
@@ -299,7 +272,7 @@ contract Lottery is VRFConsumerBaseV2, AutomationCompatibleInterface {
         )
     {
         bool isLotteryOpen = s_lotteryData.lotteryState == LotteryState.OPEN;
-        // bool lotteryTimePassed = (block.timestamp - s_lotteryData.startTimeStamp) > s_lotteryData.duration;
+        // bool lotteryTimePassed = (block.timestamp - s_lotteryData.startTimeStamp) > i_durationTime;
         bool lotteryHasPlayers = s_lotteryData.players.length > 0;
         bool lotteryHasBalance = address(this).balance > 0;
 
@@ -317,7 +290,6 @@ contract Lottery is VRFConsumerBaseV2, AutomationCompatibleInterface {
      * @dev External and overriden Chainlink Automation function for performing upKeep action.
      *
      * This is an external function, invoked by Chainlink Automation node.
-     *
      */
     function performUpkeep(
         bytes calldata /* performData */
@@ -401,27 +373,11 @@ contract Lottery is VRFConsumerBaseV2, AutomationCompatibleInterface {
     }
 
     /**
-     * @notice Getter function to get the current lottery balance.
-     * @return The lottery balance.
-     */
-    function getLotteryBalance() public view returns (uint256) {
-        return address(this).balance;
-    }
-
-    /**
      * @notice Getter function to get the current lottery starting time stamp.
      * @return The lottery starting time stamp.
      */
     function getLotteryStartTimeStamp() public view returns (uint256) {
         return s_lotteryData.startTimeStamp;
-    }
-
-    /**
-     * @notice Getter function to get the current lottery duration time.
-     * @return The lottery duration time in seconds
-     */
-    function getLotteryDurationTime() public view returns (uint256) {
-        return s_lotteryData.duration;
     }
 
     /**
@@ -441,20 +397,27 @@ contract Lottery is VRFConsumerBaseV2, AutomationCompatibleInterface {
     }
 
     /**
-     * @notice Getter function to get the lottery durations times: 0 - FAST, 1 - MEDIUM, 2 - LONG
-     * @param _duration the LotteryDuration ENUM input parameter
-     * @return The lottery duration time of chosen ENUM value.
+     * @notice Getter function to get the fixed lottery duration time.
+     * @return The lottery duration time in seconds
      */
-    function getLotteryDurationsTimes(LotteryDuration _duration) public view returns (uint256) {
-        return s_lotteryDurations[_duration];
+    function getLotteryDurationTime() public view returns (uint256) {
+        return i_durationTime;
     }
 
     /**
-     * @notice Getter function to get the lottery durations times: 0 - LOW, 1 - MEDIUM, 2 - HIGH
+     * @notice Getter function to get the current lottery balance.
+     * @return The lottery balance.
+     */
+    function getLotteryBalance() public view returns (uint256) {
+        return address(this).balance;
+    }
+
+    /**
+     * @notice Getter function to get the lottery entrance fees ENUM options: 0 - LOW, 1 - MEDIUM, 2 - HIGH
      * @param _entranceFee the LotteryFee ENUM input parameter
      * @return The lottery duration time of chosen ENUM value.
      */
-    function geLotteryFeesAmount(LotteryFee _entranceFee) public view returns (uint256) {
+    function geLotteryFeesValues(LotteryFee _entranceFee) public view returns (uint256) {
         return s_lotteryFees[_entranceFee];
     }
 

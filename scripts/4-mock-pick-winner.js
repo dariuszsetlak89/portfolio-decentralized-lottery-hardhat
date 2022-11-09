@@ -30,9 +30,8 @@ async function mockChainlinkAutomation() {
         console.log(`Lottery state (0 - NOT_STARTED, 1 - OPEN, 2 - CALCULATING): ${lotteryState}`);
 
         // Lottery balance
-        lotteryContractBalance = await lottery.getLotteryBalance();
+        const lotteryContractBalance = await lottery.getLotteryBalance();
         console.log(`Lottery contract balance: ${ethers.utils.formatEther(lotteryContractBalance)} ETH`);
-
         console.log(`Performed upkeep with RequestId: ${requestId}`);
         if (developmentChains.includes(network.name)) {
             await mockChainlinkVrf(requestId, lottery);

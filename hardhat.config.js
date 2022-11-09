@@ -79,6 +79,9 @@ module.exports = {
         player4: {
             default: 4,
         },
+        player5: {
+            default: 5,
+        },
     },
     mocha: {
         timeout: 100000, // 100 seconds max
