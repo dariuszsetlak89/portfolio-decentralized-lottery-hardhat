@@ -13,7 +13,7 @@ module.exports = async function ({ getNamedAccounts, deployments }) {
 
     ////////////////////////////////////////////////////////
     // Set lottery duration time
-    const durationTime = 300; // 300 seconds = 5 minutes
+    const durationTime = 600; // 600 seconds = 10 minutes
     ////////////////////////////////////////////////////////
 
     // Set other constructor parameters

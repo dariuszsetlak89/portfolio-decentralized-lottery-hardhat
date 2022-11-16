@@ -272,16 +272,11 @@ contract Lottery is VRFConsumerBaseV2, AutomationCompatibleInterface {
         )
     {
         bool isLotteryOpen = s_lotteryData.lotteryState == LotteryState.OPEN;
-        // bool lotteryTimePassed = (block.timestamp - s_lotteryData.startTimeStamp) > i_durationTime;
+        bool lotteryTimePassed = (block.timestamp - s_lotteryData.startTimeStamp) > i_durationTime;
         bool lotteryHasPlayers = s_lotteryData.players.length > 0;
         bool lotteryHasBalance = address(this).balance > 0;
 
-        if (
-            isLotteryOpen &&
-            /*lotteryTimePassed &&*/
-            lotteryHasPlayers &&
-            lotteryHasBalance
-        ) return (upkeepNeeded = true, "");
+        if (isLotteryOpen && lotteryTimePassed && lotteryHasPlayers && lotteryHasBalance) return (upkeepNeeded = true, "");
         else return (upkeepNeeded = false, "");
     }
 
