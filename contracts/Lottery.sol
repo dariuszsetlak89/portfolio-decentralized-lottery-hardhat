@@ -417,7 +417,7 @@ contract Lottery is VRFConsumerBaseV2, AutomationCompatibleInterface {
      * @param _entranceFee the LotteryFee ENUM input parameter
      * @return The lottery duration time of chosen ENUM value.
      */
-    function geLotteryFeesValues(LotteryFee _entranceFee) public view returns (uint256) {
+    function getLotteryFeesValues(LotteryFee _entranceFee) public view returns (uint256) {
         return s_lotteryFees[_entranceFee];
     }
 

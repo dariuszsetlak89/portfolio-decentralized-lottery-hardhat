@@ -20,7 +20,7 @@ async function updateContractAddresses() {
     const contractAddresses = JSON.parse(fs.readFileSync(frontEndContractsFile, "utf8"));
     const chainId = network.config.chainId.toString();
     if (chainId in contractAddresses) {
-        // `Lottery` contract address update
+        // Lottery contract address update
         const lotteryChainAddress = contractAddresses[chainId];
         // console.log("lotteryChainAddress:", lotteryChainAddress);
         if (!lotteryChainAddress.includes(lottery.address)) {
