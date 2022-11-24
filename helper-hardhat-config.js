@@ -11,6 +11,7 @@ const networkConfig = {
         gasLane: "0x79d3d8832d904592c0bf9818b621522c988bb8b0c05cdc3b15aea1b6e8db0c15", // it doesn't matter for mocks
         subscriptionId: "588",
         callbackGasLimit: "500000", // 500,000 gas
+        durationTime: "10", // 600 seconds
     },
     5: {
         name: "goerli",
@@ -18,6 +19,7 @@ const networkConfig = {
         gasLane: "0x79d3d8832d904592c0bf9818b621522c988bb8b0c05cdc3b15aea1b6e8db0c15",
         subscriptionId: VRF_SUB_ID,
         callbackGasLimit: "500000", // 500,000 gas
+        durationTime: "600", // 600 seconds
     },
 };
 

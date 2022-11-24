@@ -3,7 +3,7 @@ const { developmentChains } = require("../helper-hardhat-config");
 
 // Mock Chainlink Automation function
 async function mockChainlinkAutomation() {
-    let lotteryContract, lottery, lotteryState, lotteryWinner, lotteryBalance;
+    let lotteryContract, lottery, lotteryState;
 
     // Get signers
     [deployer] = await ethers.getSigners();
@@ -17,6 +17,15 @@ async function mockChainlinkAutomation() {
 
     // Check upkeepNeeded
     const { upkeepNeeded } = await lottery.callStatic.checkUpkeep(checkData);
+
+    const startTimeStamp = await lottery.getLotteryStartTimeStamp();
+    console.log("startTimeStamp:", (startTimeStamp * 1000).toString());
+    // const nowInSeconds = Date.now() / 1000;
+    const nowInSeconds = await lottery.getTimeStamp();
+    console.log("nowInSeconds:", nowInSeconds.toString());
+    const timePassed = nowInSeconds - startTimeStamp;
+    console.log("timePassed: ", timePassed);
+
     console.log("upkeepNeeded:", upkeepNeeded.toString());
 
     if (upkeepNeeded) {
@@ -43,6 +52,8 @@ async function mockChainlinkAutomation() {
 
 // Mock Chainlink VRF function
 async function mockChainlinkVrf(requestId, lottery) {
+    let lotteryWinner;
+
     console.log("Picking the lottery winner...");
     const vrfCoordinatorV2Mock = await ethers.getContract("VRFCoordinatorV2Mock");
     await vrfCoordinatorV2Mock.fulfillRandomWords(requestId, lottery.address);

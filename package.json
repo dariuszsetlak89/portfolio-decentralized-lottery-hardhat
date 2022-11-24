@@ -8,6 +8,7 @@
   "private": true,
   "devDependencies": {
     "@chainlink/contracts": "^0.5.1",
+    "@nomicfoundation/hardhat-chai-matchers": "^1.0.4",
     "@nomiclabs/hardhat-ethers": "npm:hardhat-deploy-ethers",
     "@nomiclabs/hardhat-etherscan": "^3.1.2",
     "@nomiclabs/hardhat-waffle": "^2.0.3",

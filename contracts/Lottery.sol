@@ -103,7 +103,7 @@ contract Lottery is VRFConsumerBaseV2, AutomationCompatibleInterface {
     /// @dev Lottery data parameters struct variable
     LotteryData private s_lotteryData;
 
-    /// @dev Lottery duration time 5 minutes value
+    /// @dev Lottery duration time value
     uint256 private immutable i_durationTime; // seconds
 
     /// @dev Lottery entrance fee LOW value
@@ -208,7 +208,7 @@ contract Lottery is VRFConsumerBaseV2, AutomationCompatibleInterface {
         // Change lottery state to OPEN
         s_lotteryData.lotteryState = LotteryState.OPEN;
 
-        // Push first player's address to lottery player's array
+        // Push first player's address to lottery players' array
         s_lotteryData.players.push(payable(msg.sender));
 
         // Set lottery starting time stamp
@@ -242,7 +242,7 @@ contract Lottery is VRFConsumerBaseV2, AutomationCompatibleInterface {
         // Push new lottery player's address to array
         s_lotteryData.players.push(payable(msg.sender));
 
-        // Emit an event LotteryStarted
+        // Emit an event LotteryJoined
         emit LotteryJoined(msg.sender);
     }
 
@@ -254,8 +254,8 @@ contract Lottery is VRFConsumerBaseV2, AutomationCompatibleInterface {
      * 1. The lottery should be in an OPEN state
      * 2. The Lottery duration time should have passed
      * 3. The lottery should have at lease 1 player
-     * 3. The lottery balance should be > 0
-     * 3. Chainlink Automation subscription should be funded with LINK
+     * 4. The lottery balance should be > 0
+     * 5. Chainlink Automation subscription should be funded with LINK
      *
      * This is a public function, invoked by Chainlink Automation node.
      *
@@ -373,6 +373,14 @@ contract Lottery is VRFConsumerBaseV2, AutomationCompatibleInterface {
      */
     function getLotteryStartTimeStamp() public view returns (uint256) {
         return s_lotteryData.startTimeStamp;
+    }
+
+    /**
+     * @notice Getter function to get the current lottery players array
+     * @return The current lottery players.
+     */
+    function getLotteryPlayersArray() public view returns (address payable[] memory) {
+        return s_lotteryData.players;
     }
 
     /**

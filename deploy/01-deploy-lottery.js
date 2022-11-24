@@ -13,7 +13,8 @@ module.exports = async function ({ getNamedAccounts, deployments }) {
 
     ////////////////////////////////////////////////////////
     // Set lottery duration time
-    const durationTime = 600; // 600 seconds = 10 minutes
+    //const durationTime = 600; // 600 seconds = 10 minutes
+    const durationTime = networkConfig[chainId]["durationTime"]; // 10 seconds
     ////////////////////////////////////////////////////////
 
     // Set other constructor parameters
@@ -43,6 +44,12 @@ module.exports = async function ({ getNamedAccounts, deployments }) {
         log: true,
         waitConfirmations: network.config.blockConfirmations || 1,
     });
+
+    // Add consumer to Mock contract
+    if (developmentChains.includes(network.name)) {
+        const vrfCoordinatorV2Mock = await ethers.getContract("VRFCoordinatorV2Mock");
+        await vrfCoordinatorV2Mock.addConsumer(subscriptionId, lottery.address);
+    }
 
     // Verify deployed contract on Etherscan
     if (!developmentChains.includes(network.name) && process.env.ETHERSCAN_API_KEY) {

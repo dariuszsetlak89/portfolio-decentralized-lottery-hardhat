@@ -3,8 +3,8 @@ const { ethers } = require("hardhat");
 //////////////////////////////
 // Lottery entrance fee:
 //  0 - LOW (0.1 ETH)
-//  1 - MEDIUM (1 ETH)
-//  2 - HIGH (10 ETH)
+//  1 - MEDIUM (0.5 ETH)
+//  2 - HIGH (1 ETH)
 const ENTRANCE_FEE = 1;
 //////////////////////////////
 
@@ -27,7 +27,8 @@ async function startLottery() {
     console.log("-------------------------------------------------------");
 
     // Start lottery
-    await lottery.startLottery(ENTRANCE_FEE, { value: entranceFeeAmount });
+    txStart = await lottery.startLottery(ENTRANCE_FEE, { value: entranceFeeAmount });
+    await txStart.wait(1);
     console.log(`!!! LOTTERY STARTED !!!`);
     console.log(`Deployer started and joined the lottery: ${deployer.address}`);
 

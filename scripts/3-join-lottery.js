@@ -22,7 +22,7 @@ async function joinLottery() {
 
     //////////////////////////////
     // Number of players: MAX 5
-    const PLAYERS_NUMBER = 5;
+    const PLAYERS_NUMBER = 1;
     //////////////////////////////
 
     // Deployer - already started and joined the lottery
