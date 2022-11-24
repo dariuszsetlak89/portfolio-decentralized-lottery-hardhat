@@ -34,8 +34,5 @@
     "lint:fix": "solhint 'contracts/**/*.sol' --fix",
     "format": "prettier --write .",
     "coverage": "hardhat coverage --solcoverjs ./.solcover.js"
-  },
-  "mocha": {
-    "timeout": 10000000
   }
 }
