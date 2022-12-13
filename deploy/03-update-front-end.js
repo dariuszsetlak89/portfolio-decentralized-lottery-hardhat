@@ -22,7 +22,6 @@ async function updateContractAddresses() {
     if (chainId in contractAddresses) {
         // Lottery contract address update
         const lotteryChainAddress = contractAddresses[chainId];
-        // console.log("lotteryChainAddress:", lotteryChainAddress);
         if (!lotteryChainAddress.includes(lottery.address)) {
             lotteryChainAddress.pop();
             lotteryChainAddress.push(lottery.address);

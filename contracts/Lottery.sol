@@ -25,11 +25,6 @@ error Lottery__UpkeepNotNeeded();
  * @title Decentralized Lottery contract
  * @author Dariusz Setlak
  * @notice The Decentralized Lottery smart contract.
- * @dev The Decentralized Lottery smart contract containing the following functions:
- * Main functions: startLottery, joinLottery, checkUpkeep, performUpkeep, fulfillRandomWords
- * Getter functions: getLotteryState, getLotteryEntranceFee, getLotteryStartTimeStamp, getLotteryPlayersNumber,
- * getLatestLotteryWinner, getLotteyDurationTime, getLotteryBalance, getLotteryFeesValues
- * Other functions: receive, fallback
  */
 contract Lottery is VRFConsumerBaseV2, AutomationCompatibleInterface {
     //////////////
@@ -184,9 +179,6 @@ contract Lottery is VRFConsumerBaseV2, AutomationCompatibleInterface {
      * When the first player starts new lottery, he set lottery entrance fee for himself and all new players,
      * who join the lottery, until fixed lottery time passes. The first player can choose entrance fee amount
      * from 3 awaliable ENUM variables opctions: LOW - 0.1, MEDIUM - 0.5 and HIGH - 1.
-     *
-     * This is an external function, invoked by the user, using front-end application.
-     *
      * @param _entranceFee lottery entrance fee of choice (ENUM)
      */
     function startLottery(LotteryFee _entranceFee) external payable {
@@ -225,8 +217,6 @@ contract Lottery is VRFConsumerBaseV2, AutomationCompatibleInterface {
      * The lottery entrance fee can not be changed until lottery duration time expires and the winner
      * is picked. If that happens, the lottery can be started again by first player with new entrance
      * fee using `startLottery` function.
-     *
-     * This is an external function, invoked by the user, using front-end application.
      */
     function joinLottery() external payable {
         // Check if lottery is in OPEN state
@@ -256,9 +246,6 @@ contract Lottery is VRFConsumerBaseV2, AutomationCompatibleInterface {
      * 3. The lottery should have at lease 1 player
      * 4. The lottery balance should be > 0
      * 5. Chainlink Automation subscription should be funded with LINK
-     *
-     * This is a public function, invoked by Chainlink Automation node.
-     *
      * @return upkeepNeeded the upkeepNeeded bool variable
      */
     function checkUpkeep(
@@ -283,8 +270,6 @@ contract Lottery is VRFConsumerBaseV2, AutomationCompatibleInterface {
     /**
      * @notice Chainlink Automation function for performing upKeep action.
      * @dev External and overriden Chainlink Automation function for performing upKeep action.
-     *
-     * This is an external function, invoked by Chainlink Automation node.
      */
     function performUpkeep(
         bytes calldata /* performData */
@@ -314,9 +299,6 @@ contract Lottery is VRFConsumerBaseV2, AutomationCompatibleInterface {
     /**
      * @notice Chainlink VRF function for random pick the lottery winner.
      * @dev Intenal and overriden Chainlink VRF function for random pick the lottery winner.
-     *
-     * This is an internal function, invoked by Chainlink Automation node.
-     *
      * @param _randomNumbers random numbers array from Chainlink VRF
      */
     function fulfillRandomWords(
